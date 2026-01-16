@@ -59,6 +59,56 @@ enum Commands {
         /// Task ID to delete
         id: u32,
     },
+    /// Show detailed usage examples
+    Usage,
+}
+
+fn show_help() {
+    println!(r#"kaam - A simple CLI todo application
+
+USAGE:
+    kaam <COMMAND>
+
+COMMANDS:
+    add      Add a new task
+    list     List all tasks
+    done     Mark a task as done
+    edit     Edit an existing task
+    delete   Delete a task
+    usage    Show this help message with examples
+
+EXAMPLES:
+    Add a task:
+        kaam add "Buy groceries"
+        kaam add "Finish report" --priority high
+        kaam add "Call mom" --priority medium --due 2026-01-20
+
+    List tasks:
+        kaam list
+        kaam list --status pending
+        kaam list --status done
+        kaam list --priority high
+
+    Mark task as done:
+        kaam done 1
+
+    Edit a task:
+        kaam edit 1 --description "Updated task"
+        kaam edit 1 --priority low
+        kaam edit 1 --due 2026-02-01
+
+    Delete a task:
+        kaam delete 1
+
+PRIORITY LEVELS:
+    low, medium, high
+
+STATUS VALUES:
+    pending, done
+
+DATA STORAGE:
+    Tasks are stored in ~/.kaam.json
+"#);
 }
 
 fn main() {
@@ -79,6 +129,10 @@ fn main() {
             due,
         } => commands::edit_task(id, description, priority, due),
         Commands::Delete { id } => commands::delete_task(id),
+        Commands::Usage => {
+            show_help();
+            Ok(())
+        }
     };
 
     if let Err(e) = result {
