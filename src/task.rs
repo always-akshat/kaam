@@ -1,3 +1,4 @@
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -15,6 +16,16 @@ impl fmt::Display for Priority {
             Priority::Low => write!(f, "low"),
             Priority::Medium => write!(f, "medium"),
             Priority::High => write!(f, "high"),
+        }
+    }
+}
+
+impl Priority {
+    pub fn colored(&self) -> colored::ColoredString {
+        match self {
+            Priority::Low => "low".blue(),
+            Priority::Medium => "medium".yellow(),
+            Priority::High => "high".red().bold(),
         }
     }
 }
@@ -94,6 +105,31 @@ impl fmt::Display for Task {
             "{} #{}: {}{}{}",
             status_icon, self.id, self.description, priority_str, due_str
         )
+    }
+}
+
+impl Task {
+    pub fn display_colored(&self) -> String {
+        let (status_icon, desc_style): (colored::ColoredString, colored::ColoredString) = match self.status {
+            Status::Pending => ("[ ]".yellow(), self.description.as_str().normal()),
+            Status::Done => ("[✓]".green(), self.description.as_str().dimmed().strikethrough()),
+        };
+
+        let id_str = format!("#{}", self.id).bold();
+
+        let priority_str = self
+            .priority
+            .as_ref()
+            .map(|p| format!(" [{}]", p.colored()))
+            .unwrap_or_default();
+
+        let due_str = self
+            .due_date
+            .as_ref()
+            .map(|d| format!(" {}", format!("(due: {})", d).cyan()))
+            .unwrap_or_default();
+
+        format!("{} {}: {}{}{}", status_icon, id_str, desc_style, priority_str, due_str)
     }
 }
 

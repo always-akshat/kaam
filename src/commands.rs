@@ -1,6 +1,7 @@
 use crate::storage::{get_next_id, load_tasks, save_tasks};
 use crate::task::{Priority, Status, Task};
 use chrono::Local;
+use colored::Colorize;
 
 pub fn add_task(
     description: String,
@@ -18,7 +19,7 @@ pub fn add_task(
         created_at: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
     };
 
-    println!("Added task #{}: {}", task.id, task.description);
+    println!("{} task {}: {}", "Added".green().bold(), format!("#{}", task.id).bold(), task.description);
     tasks.push(task);
 
     save_tasks(&tasks).map_err(|e| format!("Failed to save tasks: {}", e))
@@ -34,12 +35,12 @@ pub fn list_tasks(status: Option<Status>, priority: Option<Priority>) -> Result<
         .collect();
 
     if filtered.is_empty() {
-        println!("No tasks found.");
+        println!("{}", "No tasks found.".dimmed());
         return Ok(());
     }
 
     for task in filtered {
-        println!("{}", task);
+        println!("{}", task.display_colored());
     }
 
     Ok(())
@@ -54,7 +55,7 @@ pub fn mark_done(id: u32) -> Result<(), String> {
         .ok_or_else(|| format!("Task #{} not found", id))?;
 
     task.status = Status::Done;
-    println!("Marked task #{} as done: {}", id, task.description);
+    println!("{} task {} as {}: {}", "Marked".green().bold(), format!("#{}", id).bold(), "done".green(), task.description);
 
     save_tasks(&tasks).map_err(|e| format!("Failed to save tasks: {}", e))
 }
@@ -82,7 +83,7 @@ pub fn edit_task(
         task.due_date = Some(d);
     }
 
-    println!("Updated task #{}: {}", id, task);
+    println!("{} task {}:\n  {}", "Updated".blue().bold(), format!("#{}", id).bold(), task.display_colored());
 
     save_tasks(&tasks).map_err(|e| format!("Failed to save tasks: {}", e))
 }
@@ -97,7 +98,7 @@ pub fn delete_task(id: u32) -> Result<(), String> {
         return Err(format!("Task #{} not found", id));
     }
 
-    println!("Deleted task #{}", id);
+    println!("{} task {}", "Deleted".red().bold(), format!("#{}", id).bold());
 
     save_tasks(&tasks).map_err(|e| format!("Failed to save tasks: {}", e))
 }
