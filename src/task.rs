@@ -96,3 +96,82 @@ impl fmt::Display for Task {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_priority_from_str() {
+        assert_eq!("low".parse::<Priority>().unwrap(), Priority::Low);
+        assert_eq!("medium".parse::<Priority>().unwrap(), Priority::Medium);
+        assert_eq!("high".parse::<Priority>().unwrap(), Priority::High);
+        assert_eq!("HIGH".parse::<Priority>().unwrap(), Priority::High);
+        assert!("invalid".parse::<Priority>().is_err());
+    }
+
+    #[test]
+    fn test_priority_display() {
+        assert_eq!(format!("{}", Priority::Low), "low");
+        assert_eq!(format!("{}", Priority::Medium), "medium");
+        assert_eq!(format!("{}", Priority::High), "high");
+    }
+
+    #[test]
+    fn test_status_from_str() {
+        assert_eq!("pending".parse::<Status>().unwrap(), Status::Pending);
+        assert_eq!("done".parse::<Status>().unwrap(), Status::Done);
+        assert_eq!("DONE".parse::<Status>().unwrap(), Status::Done);
+        assert!("invalid".parse::<Status>().is_err());
+    }
+
+    #[test]
+    fn test_status_display() {
+        assert_eq!(format!("{}", Status::Pending), "pending");
+        assert_eq!(format!("{}", Status::Done), "done");
+    }
+
+    #[test]
+    fn test_task_display_pending() {
+        let task = Task {
+            id: 1,
+            description: "Test task".to_string(),
+            priority: Some(Priority::High),
+            due_date: Some("2026-01-20".to_string()),
+            status: Status::Pending,
+            created_at: "2026-01-16".to_string(),
+        };
+        assert_eq!(format!("{}", task), "[ ] #1: Test task [high] (due: 2026-01-20)");
+    }
+
+    #[test]
+    fn test_task_display_done() {
+        let task = Task {
+            id: 2,
+            description: "Done task".to_string(),
+            priority: None,
+            due_date: None,
+            status: Status::Done,
+            created_at: "2026-01-16".to_string(),
+        };
+        assert_eq!(format!("{}", task), "[x] #2: Done task");
+    }
+
+    #[test]
+    fn test_task_serialization() {
+        let task = Task {
+            id: 1,
+            description: "Test".to_string(),
+            priority: Some(Priority::Medium),
+            due_date: None,
+            status: Status::Pending,
+            created_at: "2026-01-16".to_string(),
+        };
+        let json = serde_json::to_string(&task).unwrap();
+        let deserialized: Task = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.id, task.id);
+        assert_eq!(deserialized.description, task.description);
+        assert_eq!(deserialized.priority, task.priority);
+        assert_eq!(deserialized.status, task.status);
+    }
+}

@@ -35,3 +35,44 @@ pub fn save_tasks(tasks: &[Task]) -> io::Result<()> {
 pub fn get_next_id(tasks: &[Task]) -> u32 {
     tasks.iter().map(|t| t.id).max().unwrap_or(0) + 1
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::task::Status;
+
+    fn create_test_task(id: u32) -> Task {
+        Task {
+            id,
+            description: format!("Task {}", id),
+            priority: None,
+            due_date: None,
+            status: Status::Pending,
+            created_at: "2026-01-16".to_string(),
+        }
+    }
+
+    #[test]
+    fn test_get_next_id_empty() {
+        let tasks: Vec<Task> = vec![];
+        assert_eq!(get_next_id(&tasks), 1);
+    }
+
+    #[test]
+    fn test_get_next_id_single() {
+        let tasks = vec![create_test_task(1)];
+        assert_eq!(get_next_id(&tasks), 2);
+    }
+
+    #[test]
+    fn test_get_next_id_multiple() {
+        let tasks = vec![create_test_task(1), create_test_task(5), create_test_task(3)];
+        assert_eq!(get_next_id(&tasks), 6);
+    }
+
+    #[test]
+    fn test_get_next_id_with_gaps() {
+        let tasks = vec![create_test_task(10), create_test_task(2)];
+        assert_eq!(get_next_id(&tasks), 11);
+    }
+}
